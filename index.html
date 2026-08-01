@@ -1,16 +1,15 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- Теги для превращения в Мобильное Приложение (PWA) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Pro-Diet OS">
+    <meta name="apple-mobile-web-app-title" content="Pro-Diet List">
     <meta name="theme-color" content="#0d1117">
     
-    <title>Pro-Diet OS | Складская Логистика</title>
+    <title>Pro-Diet OS | Список покупок</title>
     <style>
         :root {
             --bg: #0d1117;
@@ -24,185 +23,233 @@
             --border: #30363d;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        body { background-color: var(--bg); color: var(--text); padding-bottom: 110px; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 120px; }
         
         header { background: var(--surface); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
         h1 { font-size: 18px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin: 0; }
-        .settings-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; transition: 0.3s; padding: 0 5px; }
-        .settings-btn:hover { color: var(--accent); }
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+        .icon-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 6px; }
+        .icon-btn:active { transform: scale(0.9); background: var(--surface-hover); }
+        .icon-btn:hover { color: var(--accent); }
         
-        /* Фильтр: Скрытие нормальных позиций в режиме магазина */
-        body.filter-active .item-row:not(.is-low) { display: none; }
+        .search-container { background: var(--surface); padding: 10px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 9; }
+        .search-container input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 15px; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; }
+        .search-container input:focus { border-color: var(--accent); box-shadow: 0 0 5px rgba(88, 166, 255, 0.2); }
+
+        body.filter-active .item-row:not(.has-value) { display: none !important; }
         body.filter-active #filter-btn { color: var(--success); text-shadow: 0 0 10px rgba(57, 211, 83, 0.4); }
         
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
         
-        .category-group { margin-bottom: 25px; }
+        .category-group { margin-bottom: 20px; }
         .category-title { font-size: 14px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .category-arrow { transition: transform 0.3s ease; font-size: 12px; color: var(--text-muted); }
+        .category-group.collapsed .category-arrow { transform: rotate(-90deg); }
         .category-items { transition: max-height 0.3s ease-out; overflow: hidden; }
-        .category-items.hidden { display: none; }
+        .category-group.collapsed .category-items { display: none; }
         
-        .item-row { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; border: 1px solid var(--border); transition: 0.2s; cursor: pointer; }
-        .item-info { display: flex; flex-direction: column; pointer-events: none; }
-        .item-name { font-size: 15px; font-weight: 500; transition: 0.2s; }
-        .item-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 10px 15px; margin-bottom: 8px; border-radius: 8px; border: 1px solid var(--border); transition: 0.2s; }
+        .item-info { flex: 1; cursor: pointer; padding-right: 10px; }
+        .item-name { font-size: 15px; font-weight: 500; transition: 0.2s; user-select: none; line-height: 1.2; }
         
-        /* Подсветка дефицитных товаров */
-        .item-row.is-low { border-color: rgba(248, 81, 73, 0.4); background: rgba(248, 81, 73, 0.08); }
-        .item-row.is-low .item-name { color: var(--danger); }
+        .item-row.has-value { border-color: rgba(57, 211, 83, 0.4); background: rgba(57, 211, 83, 0.08); }
+        .item-row.has-value .item-name { color: var(--success); }
+        
+        .item-input-wrapper { display: flex; align-items: center; gap: 4px; }
+        .stepper-btn { background: var(--surface-hover); border: 1px solid var(--border); color: var(--text); border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; user-select: none; transition: 0.1s; flex-shrink: 0;}
+        .stepper-btn:active { transform: scale(0.9); background: var(--border); }
+        input.qty-input { background: var(--bg); border: 1px solid var(--border); color: var(--accent); font-weight: bold; padding: 0; height: 32px; border-radius: 6px; width: 50px; text-align: center; font-size: 16px; margin: 0; flex-shrink: 0;}
+        input.qty-input:focus { outline: none; border-color: var(--accent); }
+        .unit { font-size: 11px; color: var(--text-muted); width: 45px; text-align: left; line-height: 1.1; flex-shrink: 0;}
 
-        /* Чек-лист в магазине (Вычеркнутые товары) */
-        .item-row.checked { border-color: var(--success); background: rgba(57, 211, 83, 0.08); opacity: 0.6; }
-        .item-row.checked .item-name { text-decoration: line-through; color: var(--success); }
-        
-        .item-input-wrapper { display: flex; align-items: center; gap: 8px; }
-        input[type="number"], input[type="text"] { background: var(--bg); border: 1px solid var(--border); color: var(--accent); font-weight: bold; padding: 8px; border-radius: 6px; width: 70px; text-align: center; font-size: 16px; transition: 0.2s; }
-        input[type="text"] { font-weight: normal; color: var(--text); }
-        input[type="number"]:focus, input[type="text"]:focus { outline: none; border-color: var(--accent); }
-        .unit { font-size: 12px; color: var(--text-muted); width: 25px;}
+        .floating-action { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; z-index: 100; display: flex; gap: 10px; }
+        .btn-primary { background: var(--success); color: var(--bg); border: none; padding: 16px; flex: 1; border-radius: 12px; font-size: 16px; font-weight: bold; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 15px rgba(57, 211, 83, 0.3); transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-reset { background: var(--surface); color: var(--danger); border: 1px solid var(--border); width: 55px; flex-shrink: 0; border-radius: 12px; font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
+        .btn-primary:active, .btn-reset:active { transform: scale(0.95); }
 
-        .floating-action { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; z-index: 100; }
-        
-        .btn-primary { background: var(--success); color: var(--bg); border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: bold; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 15px rgba(57, 211, 83, 0.2); transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .btn-primary:active { transform: scale(0.96); }
-        
-        .btn-secondary { background: var(--surface-hover); color: var(--accent); border: 1px solid var(--border); padding: 14px; width: 100%; border-radius: 12px; font-size: 14px; font-weight: bold; text-transform: uppercase; cursor: pointer; margin-bottom: 20px; transition: 0.3s ease; }
-        .btn-secondary:active { transform: scale(0.98); }
-
-        /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: var(--surface); padding: 25px; border-radius: 12px; border: 1px solid var(--border); width: 90%; max-width: 400px; }
-        .modal-content h2 { margin-bottom: 15px; font-size: 18px; color: var(--accent); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.2s; }
+        .modal.active { display: flex; opacity: 1; }
+        .modal-content { background: var(--surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border); width: 90%; max-width: 400px; transform: scale(0.95); transition: transform 0.2s; max-height: 80vh; overflow-y: auto; }
+        .modal.active .modal-content { transform: scale(1); }
+        .modal-content h2 { margin-bottom: 15px; font-size: 18px; color: var(--accent); display: flex; justify-content: space-between; align-items: center; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
-        .form-group input { width: 100%; text-align: left; }
-        .btn-save { background: var(--accent); color: var(--bg); border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;}
-        .close-modal { text-align: right; color: var(--text-muted); cursor: pointer; margin-bottom: 10px; }
+        .form-group input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 6px; font-size: 14px;}
+        .btn-save { background: var(--accent); color: var(--bg); border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 14px;}
+        .close-modal { color: var(--text-muted); cursor: pointer; font-size: 20px; padding: 5px; }
+
+        .preset-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg); padding: 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--border); }
+        .preset-name { font-weight: 500; font-size: 14px; }
+        .preset-actions { display: flex; gap: 8px; }
+        .btn-load { background: var(--success); color: var(--bg); border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-del { background: var(--surface-hover); color: var(--danger); border: 1px solid var(--danger); padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+
+        .toast { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text); padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 15px rgba(0,0,0,0.6); border: 1px solid var(--border); transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 9999; text-align: center; white-space: nowrap; }
+        .toast.show { top: 20px; }
     </style>
 </head>
 <body>
 
+    <div id="toast" class="toast"></div>
+
     <header>
         <h1>Pro-Diet OS</h1>
-        <div>
-            <button class="settings-btn" id="filter-btn" onclick="toggleFilter()" title="Режим Магазина (Только дефицит)">🛒</button>
-            <button class="settings-btn" onclick="toggleSettings()" title="Настройки API">⚙️</button>
+        <div class="header-actions">
+            <button class="icon-btn" id="filter-btn" onclick="toggleFilter()" title="Только выбранное">🛒</button>
+            <button class="icon-btn" onclick="openPresets()" title="Шаблоны">📁</button>
+            <button class="icon-btn" onclick="shareCart()" title="Поделиться">📤</button>
+            <button class="icon-btn" onclick="toggleSettings()" title="Настройки API">⚙️</button>
         </div>
     </header>
 
-    <div class="container">
-        <!-- Основная Матрица -->
-        <div id="matrix-container"></div>
-        
-        <!-- Блок разовых покупок -->
-        <div class="category-group">
-            <div class="category-title" style="cursor: default; user-select: none;">
-                <span>📌 Разовые покупки</span>
-            </div>
-            <div class="item-input-wrapper" style="width: 100%; margin-bottom: 10px; display: flex; gap: 10px;">
-                <input type="text" id="adhoc-input" placeholder="Например: Лампочка E27" style="flex: 1;" onkeydown="if(event.key==='Enter') addAdhoc()">
-                <button class="btn-primary" style="padding: 10px 15px; font-size: 20px; box-shadow: none;" onclick="addAdhoc()">+</button>
-            </div>
-            <div id="adhoc-list"></div>
-        </div>
-
-        <!-- Восполнение склада -->
-        <button class="btn-secondary" id="btn-fill" onclick="fillStock()">
-            📦 Закупка завершена (Восполнить склад)
-        </button>
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="🔍 Быстрый поиск товара..." oninput="handleSearch(this.value)">
     </div>
 
-    <!-- Плавающая панель управления -->
+    <div class="container" id="matrix-container"></div>
+
     <div class="floating-action">
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-primary" id="btn-copy" onclick="copyList()" style="background: var(--surface-hover); color: var(--text); border: 1px solid var(--border); box-shadow: none; flex: 1;">
-                📋 Копия
-            </button>
-            <button class="btn-primary" id="btn-send" onclick="generateAndSend()" style="flex: 2;">
-                🚀 В Telegram
-            </button>
-        </div>
+        <button class="btn-reset" onclick="clearCart()" title="Очистить корзину">🗑️</button>
+        <button class="btn-primary" id="btn-send" onclick="generateAndSend()">
+            <span id="btn-label">🚀 Отправить (0)</span>
+        </button>
     </div>
 
     <div class="modal" id="settings-modal">
         <div class="modal-content">
-            <div class="close-modal" onclick="toggleSettings()">✕ Закрыть</div>
-            <h2>Настройки Telegram API</h2>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Данные сохраняются только в телефоне.</p>
+            <h2><span>Настройки API</span> <span class="close-modal" onclick="toggleSettings()">✕</span></h2>
             <div class="form-group">
                 <label>Bot Token (@BotFather)</label>
-                <input type="text" id="tg-token" placeholder="123456:ABC-DEF1234ghIkl">
+                <input type="text" id="tg-token" placeholder="Токен бота" autocomplete="off">
             </div>
             <div class="form-group">
                 <label>Ваш Chat ID (@userinfobot)</label>
-                <input type="text" id="tg-chat-id" placeholder="123456789">
+                <input type="text" id="tg-chat-id" placeholder="ID чата" autocomplete="off">
             </div>
-            <button class="btn-save" onclick="saveSettings()">Сохранить Конфигурацию</button>
+            <button class="btn-save" onclick="saveSettings()">Сохранить</button>
+        </div>
+    </div>
+
+    <div class="modal" id="presets-modal">
+        <div class="modal-content">
+            <h2><span>Шаблоны</span> <span class="close-modal" onclick="closePresets()">✕</span></h2>
+            
+            <div class="form-group" style="display: flex; gap: 8px; margin-bottom: 20px;">
+                <input type="text" id="preset-name" placeholder="Имя нового шаблона..." style="flex: 1;">
+                <button class="btn-save" style="width: auto; margin: 0; padding: 0 15px;" onclick="savePreset()">💾</button>
+            </div>
+            
+            <div id="presets-list"></div>
         </div>
     </div>
 
     <script>
         const DB = [
-            { cat: "1. Фреш-Зона", icon: "🥬", items: [
-                { id: "bananas", name: "Бананы", min: 0, opt: 14, unit: "шт", price: 0.30 },
-                { id: "tomatoes", name: "Помидоры", min: 0, opt: 7, unit: "шт", price: 0.40 }
+            { cat: "1. Фреш-Зона", icon: "🥦", items: [
+                { id: "bananas", name: "Бананы", unit: "шт" },
+                { id: "tomatoes", name: "Помидоры", unit: "шт" }
             ]},
             { cat: "2. Бакалея", icon: "🌾", items: [
-                { id: "oats", name: "Овсянка", min: 1, opt: 3, unit: "уп", price: 0.80 },
-                { id: "chia", name: "Семена Чиа", min: 1, opt: 3, unit: "уп", price: 1.50 },
-                { id: "rice", name: "Рис Басмати", min: 500, opt: 1500, unit: "г", price: 0.003 }, 
-                { id: "pasta", name: "Спагетти", min: 500, opt: 1500, unit: "г", price: 0.002 },
-                { id: "buckwheat", name: "Гречка", min: 500, opt: 1500, unit: "г", price: 0.003 },
-                { id: "bread", name: "Протеиновый хлеб", min: 0, opt: 1, unit: "уп", price: 2.00 },
-                { id: "nuts", name: "Орехи (Грецкие)", min: 100, opt: 500, unit: "г", price: 0.015 },
-                { id: "oil", name: "Масло растит.", min: 100, opt: 500, unit: "мл", price: 0.004 },
-                { id: "cacao", name: "Какао", min: 100, opt: 600, unit: "г", price: 0.008 }
+                { id: "oats", name: "Овсянка", unit: "г/кг/уп" },
+                { id: "chia", name: "Семена Чиа", unit: "уп" },
+                { id: "rice", name: "Рис Басмати", unit: "г" },
+                { id: "pasta", name: "Спагетти", unit: "г" },
+                { id: "buckwheat", name: "Гречка", unit: "г/кг" },
+                { id: "bread", name: "Протеиновый хлеб", unit: "уп" },
+                { id: "nuts", name: "Орехи (Грецкие)", unit: "г" },
+                { id: "oil", name: "Масло растит.", unit: "мл" },
+                { id: "cacao", name: "Какао", unit: "г" }
             ]},
             { cat: "3. Сыры, Ягоды, Снеки", icon: "🧀", items: [
-                { id: "honey", name: "Мёд", min: 100, opt: 1000, unit: "г", price: 0.006 },
-                { id: "white_cheese", name: "Белый сыр", min: 200, opt: 1000, unit: "г", price: 0.008 },
-                { id: "kashar", name: "Сыр Кашар", min: 250, opt: 750, unit: "г", price: 0.01 },
-                { id: "gouda", name: "Сыр Гауда", min: 0, opt: 2, unit: "уп", price: 2.20 },
-                { id: "cottage", name: "Творожный сыр", min: 1, opt: 3, unit: "уп", price: 1.50 },
-                { id: "olives", name: "Оливки", min: 1, opt: 3, unit: "уп", price: 1.20 },
-                { id: "blueberry", name: "Черника", min: 100, opt: 750, unit: "г", price: 0.012 },
-                { id: "raspberry", name: "Малина", min: 100, opt: 750, unit: "г", price: 0.014 },
-                { id: "chips", name: "Чипсы", min: 3, opt: 12, unit: "уп", price: 1.80 }
+                { id: "honey", name: "Мёд", unit: "г" },
+                { id: "white_cheese", name: "Белый сыр (Брынза)", unit: "г" },
+                { id: "kashar", name: "Сыр Кашар", unit: "г" },
+                { id: "gouda", name: "Сыр Гауда", unit: "уп/г" },
+                { id: "cottage", name: "Творожный сыр (Филадельфия)", unit: "уп" },
+                { id: "olives", name: "Оливки", unit: "уп" },
+                { id: "blueberry", name: "Черника", unit: "г" },
+                { id: "raspberry", name: "Малина", unit: "г" },
+                { id: "chips", name: "Чипсы", unit: "уп" }
             ]},
             { cat: "4. Мясной отдел", icon: "🥩", items: [
-                { id: "chicken", name: "Филе курицы", min: 0.7, opt: 3.0, unit: "кг", price: 10.00 }, 
-                { id: "fuet", name: "Салями Fuet", min: 1, opt: 5, unit: "шт", price: 2.50 }
+                { id: "chicken", name: "Филе курицы", unit: "кг" },
+                { id: "fuet", name: "Салями Fuet", unit: "шт" }
             ]},
             { cat: "5. Молочная база", icon: "🥛", items: [
-                { id: "milk", name: "Молоко 1.5%", min: 7, opt: 24, unit: "уп", price: 1.05 },
-                { id: "eggs", name: "Яйца", min: 10, opt: 30, unit: "шт", price: 0.20 },
-                { id: "butter", name: "Сливочное масло", min: 1, opt: 5, unit: "уп", price: 2.00 }
+                { id: "milk", name: "Молоко 1.5%", unit: "уп" },
+                { id: "eggs", name: "Яйца", unit: "шт" },
+                { id: "butter", name: "Сливочное масло", unit: "уп/г" }
             ]},
             { cat: "6. Инфраструктура & Зоопарк", icon: "🧻", items: [
-                { id: "rat_food", name: "Корм для крыс", min: 1, opt: 4, unit: "уп", price: 4.00 },
-                { id: "tp", name: "Туалетная бумага", min: 5, opt: 30, unit: "рул", price: 0.40 },
-                { id: "towels", name: "Бум. полотенца", min: 2, opt: 8, unit: "рул", price: 0.60 }
+                { id: "rat_food", name: "Корм для крыс", unit: "уп" },
+                { id: "tp", name: "Туалетная бумага", unit: "рул" },
+                { id: "towels", name: "Бум. полотенца", unit: "рул" }
             ]},
             { cat: "7. Напитки и Спортпит", icon: "🍺", items: [
-                { id: "juice", name: "Сок", min: 7, opt: 24, unit: "шт", price: 1.20 },
-                { id: "beer", name: "Пиво", min: 7, opt: 40, unit: "шт", price: 0.80 },
-                { id: "protein", name: "Протеин", min: 1, opt: 5, unit: "уп", price: 15.00 }
+                { id: "juice", name: "Сок", unit: "уп/шт" },
+                { id: "beer", name: "Пиво", unit: "шт" },
+                { id: "protein", name: "Протеин", unit: "уп" },
+                { id: "creatine", name: "Креатин", unit: "г" }
+            ]},
+            { cat: "8. Чайная зона", icon: "☕", items: [
+                { id: "sencha", name: "Чай Сенча", unit: "г/уп" },
+                { id: "jasmine", name: "Чай Жасминовый", unit: "г/уп" },
+                { id: "chamomile", name: "Ромашка", unit: "уп" },
+                { id: "fennel", name: "Фенхель Анис Тмин", unit: "уп" },
+                { id: "tea_bags_m", name: "Чайные пакетики M", unit: "уп/шт" },
+                { id: "tea_bags_xl", name: "Чайные пакетики XL", unit: "уп/шт" }
+            ]},
+            { cat: "9. Бытовая химия и Гигиена", icon: "🧹", items: [
+                { id: "apple_soap", name: "Яблочное моющее", unit: "мл" },
+                { id: "dw_pods", name: "Капсулы в посудомойку", unit: "уп/шт" },
+                { id: "laundry_pods", name: "Капсулы в стиралку", unit: "уп/шт" },
+                { id: "wet_wipes", name: "Влажные салфетки", unit: "уп" },
+                { id: "alcohol_wipes", name: "Спиртовые салфетки", unit: "уп" },
+                { id: "hand_soap", name: "Мыло для рук", unit: "мл/шт" },
+                { id: "sponge", name: "Мочалки", unit: "шт" },
+                { id: "shower_gel", name: "Гель для душа", unit: "мл" },
+                { id: "shave_gel", name: "Гель для бритья", unit: "мл" },
+                { id: "razors", name: "Бритвы", unit: "шт" }
             ]}
         ];
 
-        let adhocItems = JSON.parse(localStorage.getItem('proDietAdhoc')) || [];
+        let cartState = {};
+        let presetsState = {};
+        let toastTimeout;
 
         window.onload = function() {
+            cartState = JSON.parse(localStorage.getItem('proDietCart')) || {};
+            presetsState = JSON.parse(localStorage.getItem('proDietPresets')) || {};
             renderMatrix();
-            renderAdhoc();
             loadSettings();
+            updateCounter();
         };
+
+        function doVibrate(ms) {
+            if (navigator.vibrate) navigator.vibrate(ms);
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.borderColor = type === 'error' ? 'var(--danger)' : 'var(--success)';
+            toast.classList.add('show');
+            doVibrate(type === 'error' ? [50, 50, 50] : 50);
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
 
         function toggleFilter() {
             document.body.classList.toggle('filter-active');
+            doVibrate(20);
+            if (document.body.classList.contains('filter-active')) {
+                document.querySelectorAll('.category-group').forEach(group => {
+                    if (group.querySelector('.item-row.has-value')) group.classList.remove('collapsed');
+                });
+            }
         }
 
         function escapeHtml(text) {
@@ -211,42 +258,38 @@
 
         function renderMatrix() {
             const container = document.getElementById('matrix-container');
-            const savedData = JSON.parse(localStorage.getItem('proDietStock')) || {};
-            const checkedData = JSON.parse(localStorage.getItem('proDietChecked')) || [];
             let fullHtml = ''; 
 
             DB.forEach(category => {
                 fullHtml += `
-                    <div class="category-group">
-                        <div class="category-title" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                    <div class="category-group" id="cat-group-${category.cat}">
+                        <div class="category-title" onclick="toggleCategory(this)">
                             <span>${category.icon} ${category.cat}</span>
-                            <span style="font-size: 14px; color: var(--text-muted);">↕️</span>
+                            <span class="category-arrow">▼</span>
                         </div>
                         <div class="category-items">
                 `;
                 
                 category.items.forEach(item => {
-                    let val = savedData[item.id] !== undefined ? savedData[item.id] : '';
-                    let stock = parseFloat(val) || 0;
-                    let isLow = stock <= item.min ? 'is-low' : ''; 
-                    let isChecked = (checkedData.includes(item.id) && isLow) ? 'checked' : '';
+                    let val = cartState[item.id] !== undefined ? cartState[item.id] : '';
+                    let hasValue = (val !== '' && parseFloat(val) > 0) ? 'has-value' : ''; 
 
                     fullHtml += `
-                        <div class="item-row ${isLow} ${isChecked}" id="row-${item.id}" onclick="toggleCheck('${item.id}', event)">
-                            <div class="item-info">
+                        <div class="item-row ${hasValue}" id="row-${item.id}">
+                            <div class="item-info" onclick="focusInput('${item.id}')">
                                 <span class="item-name">${item.name}</span>
-                                <span class="item-meta">Квант закупки: ${item.opt} ${item.unit} | Мин: ${item.min}</span>
                             </div>
                             <div class="item-input-wrapper">
-                                <input type="number" 
+                                <div class="stepper-btn" onclick="stepValue('${item.id}', -1)">-</div>
+                                <input type="text" 
                                        inputmode="decimal"
-                                       step="any"
-                                       min="0"
+                                       class="qty-input"
                                        id="qty-${item.id}" 
                                        value="${val}" 
                                        placeholder="0" 
                                        onfocus="this.select()"
-                                       oninput="saveStock('${item.id}')">
+                                       oninput="handleInput('${item.id}', this)">
+                                <div class="stepper-btn" onclick="stepValue('${item.id}', 1)">+</div>
                                 <span class="unit">${item.unit}</span>
                             </div>
                         </div>
@@ -259,281 +302,266 @@
             container.innerHTML = fullHtml;
         }
 
-        function toggleCheck(id, event) {
-            if(event.target.tagName === 'INPUT') return;
-            
-            const row = document.getElementById('row-' + id);
-            if(row && row.classList.contains('is-low')) {
-                row.classList.toggle('checked');
-                
-                let checkedData = JSON.parse(localStorage.getItem('proDietChecked')) || [];
-                if (row.classList.contains('checked')) {
-                    if (!checkedData.includes(id)) checkedData.push(id);
-                } else {
-                    checkedData = checkedData.filter(i => i !== id);
-                }
-                localStorage.setItem('proDietChecked', JSON.stringify(checkedData));
-            }
+        function toggleCategory(element) {
+            element.parentElement.classList.toggle('collapsed');
+            doVibrate(10);
         }
 
-        function saveStock(id) {
-            let input = document.getElementById('qty-' + id);
-            if (input.value !== "" && parseFloat(input.value) < 0) input.value = 0;
-            
-            let val = input.value;
-            let data = JSON.parse(localStorage.getItem('proDietStock')) || {};
-            data[id] = val;
-            localStorage.setItem('proDietStock', JSON.stringify(data));
+        function focusInput(id) {
+            document.getElementById('qty-' + id).focus();
+        }
 
-            let itemMeta = null;
-            DB.forEach(c => c.items.forEach(i => { if(i.id === id) itemMeta = i; }));
-
-            if (itemMeta) {
-                let stock = parseFloat(val) || 0;
-                let row = document.getElementById('row-' + id);
-                if (row) {
-                    if (stock <= itemMeta.min) {
-                        row.classList.add('is-low');
+        function handleSearch(query) {
+            query = query.toLowerCase().trim();
+            document.querySelectorAll('.category-group').forEach(group => {
+                let hasMatch = false;
+                group.querySelectorAll('.item-row').forEach(row => {
+                    let name = row.querySelector('.item-name').innerText.toLowerCase();
+                    if (name.includes(query)) {
+                        row.style.display = 'flex';
+                        hasMatch = true;
                     } else {
-                        row.classList.remove('is-low');
-                        row.classList.remove('checked');
-                        
-                        let checkedData = JSON.parse(localStorage.getItem('proDietChecked')) || [];
-                        checkedData = checkedData.filter(i => i !== id);
-                        localStorage.setItem('proDietChecked', JSON.stringify(checkedData));
+                        row.style.display = 'none';
                     }
+                });
+                
+                if (hasMatch || query === '') {
+                    group.style.display = 'block';
+                    if (query !== '') group.classList.remove('collapsed');
+                } else {
+                    group.style.display = 'none';
                 }
-            }
+            });
         }
 
-        function addAdhoc() {
-            const input = document.getElementById('adhoc-input');
-            const val = input.value.trim();
-            if(val) {
-                adhocItems.push(val);
-                localStorage.setItem('proDietAdhoc', JSON.stringify(adhocItems));
-                input.value = '';
-                renderAdhoc();
-            }
-        }
-        
-        function removeAdhoc(idx) {
-            adhocItems.splice(idx, 1);
-            localStorage.setItem('proDietAdhoc', JSON.stringify(adhocItems));
-            renderAdhoc();
-        }
-        
-        function clearAdhoc() {
-            adhocItems = [];
-            localStorage.removeItem('proDietAdhoc');
-            renderAdhoc();
-        }
-        
-        function renderAdhoc() {
-            const container = document.getElementById('adhoc-list');
-            container.innerHTML = adhocItems.map((item, idx) => `
-                <div class="item-row" style="padding: 10px 15px; background: var(--surface-hover);">
-                    <span style="font-size: 14px;">${escapeHtml(item)}</span>
-                    <span style="cursor: pointer; color: var(--danger); font-size: 16px; padding: 0 10px;" onclick="removeAdhoc(${idx})">✕</span>
-                </div>
-            `).join('');
-        }
-
-        // УМНОЕ ВОСПОЛНЕНИЕ СКЛАДА
-        function fillStock() {
-            let data = JSON.parse(localStorage.getItem('proDietStock')) || {};
-            let checkedData = JSON.parse(localStorage.getItem('proDietChecked')) || [];
+        function stepValue(id, step) {
+            let input = document.getElementById('qty-' + id);
+            let current = parseFloat(input.value.replace(',', '.')) || 0;
+            let newVal = current + step;
+            if (newVal < 0) newVal = 0;
             
-            // Находим все дефицитные позиции
-            let lowItems = [];
-            DB.forEach(c => c.items.forEach(i => {
-                let stock = parseFloat(data[i.id]) || 0;
-                if (stock <= i.min) lowItems.push(i);
-            }));
+            if (!Number.isInteger(newVal)) newVal = parseFloat(newVal.toFixed(2));
+            
+            input.value = newVal === 0 ? '' : newVal;
+            handleInput(id, input);
+            doVibrate(15);
+        }
 
-            if (lowItems.length === 0) {
-                alert("Дефицитных товаров нет, склад полон!");
+        function handleInput(id, input) {
+            let rawValue = input.value.replace(/[^0-9.,]/g, '');
+            let sanitized = rawValue.replace(',', '.');
+            
+            let parts = sanitized.split('.');
+            if (parts.length > 2) sanitized = parts[0] + '.' + parts.slice(1).join('');
+
+            if (input.value !== sanitized) input.value = sanitized;
+
+            let parsed = parseFloat(sanitized);
+
+            if (sanitized === "" || isNaN(parsed) || parsed <= 0) {
+                delete cartState[id];
+                document.getElementById('row-' + id).classList.remove('has-value');
+            } else {
+                cartState[id] = sanitized;
+                document.getElementById('row-' + id).classList.add('has-value');
+            }
+            
+            localStorage.setItem('proDietCart', JSON.stringify(cartState));
+            updateCounter();
+        }
+
+        function updateCounter() {
+            const count = Object.keys(cartState).length;
+            const label = document.getElementById('btn-label');
+            label.innerText = count > 0 ? `🚀 Отправить (${count})` : "🚀 Отправить (0)";
+        }
+
+        function clearCart() {
+            if (Object.keys(cartState).length === 0) {
+                showToast("Корзина уже пуста", "info");
                 return;
             }
-
-            let itemsToReplenish = [];
-            
-            // Если что-то вычеркнуто — восполняем ТОЛЬКО вычеркнутые. 
-            // Если НИЧЕГО не вычеркнуто — восполняем ВСЕ дефицитные.
-            if (checkedData.length > 0) {
-                itemsToReplenish = lowItems.filter(i => checkedData.includes(i.id));
-            } else {
-                itemsToReplenish = lowItems;
+            if (confirm("Точно очистить весь список?")) {
+                cartState = {};
+                localStorage.removeItem('proDietCart');
+                document.querySelectorAll('input.qty-input').forEach(input => input.value = '');
+                document.querySelectorAll('.item-row').forEach(row => row.classList.remove('has-value'));
+                updateCounter();
+                showToast("Корзина очищена", "info");
             }
-
-            let confirmMsg = checkedData.length > 0 
-                ? `Восполнить ${itemsToReplenish.length} отмеченных товаров?` 
-                : `Восполнить ВСЕ дефицитные товары (${itemsToReplenish.length} шт.) до целевых норм?`;
-
-            if (!confirm(confirmMsg)) return;
-            
-            itemsToReplenish.forEach(item => {
-                let currentStock = parseFloat(data[item.id]) || 0;
-                data[item.id] = currentStock + item.opt; 
-            });
-            
-            localStorage.setItem('proDietStock', JSON.stringify(data));
-            localStorage.removeItem('proDietChecked');
-            renderMatrix();
-            
-            const btn = document.getElementById('btn-fill');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = "✅ ГОМЕОСТАЗ ВОССТАНОВЛЕН";
-            btn.style.background = "var(--success)";
-            btn.style.color = "var(--bg)";
-            btn.style.borderColor = "var(--success)";
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.style.background = "";
-                btn.style.color = "";
-                btn.style.borderColor = "";
-            }, 2500);
         }
 
-        function buildMessage(format = 'html') {
-            let message = format === 'html' ? "🛒 <b>МАТРИЦА ЗАКУПКИ</b>\n\n" : "🛒 *МАТРИЦА ЗАКУПКИ*\n\n";
-            let totalPrice = 0;
+        function openPresets() {
+            document.getElementById('presets-modal').classList.add('active');
+            renderPresetsList();
+            doVibrate(20);
+        }
+
+        function closePresets() {
+            document.getElementById('presets-modal').classList.remove('active');
+        }
+
+        function savePreset() {
+            const nameInput = document.getElementById('preset-name');
+            const name = nameInput.value.trim();
+            
+            if (!name) return showToast("Введите имя шаблона", "error");
+            if (Object.keys(cartState).length === 0) return showToast("Нельзя сохранить пустой список", "error");
+
+            presetsState[name] = JSON.parse(JSON.stringify(cartState));
+            localStorage.setItem('proDietPresets', JSON.stringify(presetsState));
+            
+            nameInput.value = '';
+            showToast("Шаблон сохранен", "info");
+            renderPresetsList();
+        }
+
+        function renderPresetsList() {
+            const list = document.getElementById('presets-list');
+            list.innerHTML = '';
+            
+            for (let name in presetsState) {
+                list.innerHTML += `
+                    <div class="preset-row">
+                        <span class="preset-name">${escapeHtml(name)}</span>
+                        <div class="preset-actions">
+                            <button class="btn-load" onclick="loadPreset('${escapeHtml(name)}')">Загрузить</button>
+                            <button class="btn-del" onclick="deletePreset('${escapeHtml(name)}')">✕</button>
+                        </div>
+                    </div>
+                `;
+            }
+            if (list.innerHTML === '') {
+                list.innerHTML = '<div style="text-align:center; color: var(--text-muted); font-size: 12px; margin-top: 10px;">Нет сохраненных шаблонов</div>';
+            }
+        }
+
+        function loadPreset(name) {
+            if (!presetsState[name]) return;
+            cartState = JSON.parse(JSON.stringify(presetsState[name]));
+            localStorage.setItem('proDietCart', JSON.stringify(cartState));
+            renderMatrix();
+            updateCounter();
+            closePresets();
+            showToast(`Шаблон «${name}» загружен`, "info");
+        }
+
+        function deletePreset(name) {
+            if (confirm(`Удалить шаблон «${name}»?`)) {
+                delete presetsState[name];
+                localStorage.setItem('proDietPresets', JSON.stringify(presetsState));
+                renderPresetsList();
+            }
+        }
+
+        function toggleSettings() {
+            document.getElementById('settings-modal').classList.toggle('active');
+            doVibrate(20);
+        }
+
+        function loadSettings() {
+            document.getElementById('tg-token').value = localStorage.getItem('tg_token') || '';
+            document.getElementById('tg-chat-id').value = localStorage.getItem('tg_chat_id') || '';
+        }
+
+        function saveSettings() {
+            localStorage.setItem('tg_token', document.getElementById('tg-token').value.trim());
+            localStorage.setItem('tg_chat_id', document.getElementById('tg-chat-id').value.trim());
+            toggleSettings();
+            showToast("Настройки API сохранены", "info");
+        }
+
+        function generateMessageText() {
+            let message = "🛒 *СПИСОК ПОКУПОК*\n\n";
             let hasItems = false;
 
             DB.forEach(category => {
                 let catText = "";
                 category.items.forEach(item => {
-                    let stock = parseFloat(document.getElementById('qty-' + item.id).value) || 0;
-                    if (stock <= item.min) {
-                        let toBuy = item.opt; 
-                        let itemName = format === 'html' ? escapeHtml(item.name) : item.name;
-                        let itemFmt = format === 'html' ? `<b>${toBuy} ${item.unit}</b>` : `*${toBuy} ${item.unit}*`;
-                        
-                        catText += `▫️ ${itemName}: ${itemFmt}\n`;
-                        totalPrice += (toBuy * item.price);
+                    let val = cartState[item.id];
+                    let qty = parseFloat(val);
+                    if (val && !isNaN(qty) && qty > 0) {
+                        catText += `▫️ ${item.name}: ${val} ${item.unit}\n`;
                         hasItems = true;
                     }
                 });
-                
-                if (catText !== "") {
-                    let catName = format === 'html' ? escapeHtml(category.cat) : category.cat;
-                    let catHeader = format === 'html' ? `<b>${category.icon} ${catName}</b>` : `*${category.icon} ${catName}*`;
-                    message += `${catHeader}\n${catText}\n`;
-                }
+                if (catText !== "") message += `*${category.icon} ${category.cat}*\n${catText}\n`;
             });
-
-            if (adhocItems.length > 0) {
-                let adhocHeader = format === 'html' ? `<b>📌 Разовые покупки</b>` : `*📌 Разовые покупки*`;
-                message += `${adhocHeader}\n`;
-                adhocItems.forEach(i => {
-                    let itemName = format === 'html' ? escapeHtml(i) : i;
-                    message += `▫️ ${itemName}\n`;
-                });
-                message += `\n`;
-                hasItems = true;
-            }
-
-            if (!hasItems) return null;
-
-            let budgetHeader = format === 'html' ? `<b>Бюджет: ~ ${totalPrice.toFixed(2)} EUR</b>` : `*Бюджет: ~ ${totalPrice.toFixed(2)} EUR*`;
-            message += `💰 ${budgetHeader}`;
-            
-            return message;
+            return hasItems ? message : null;
         }
 
-        async function copyList() {
-            const msg = buildMessage('text');
-            if (!msg) {
-                alert("Склад полон! Список пуст.");
-                return;
+        async function shareCart() {
+            doVibrate(20);
+            let message = generateMessageText();
+            if (!message) return showToast("Список пуст", "error");
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: 'Список покупок Pro-Diet', text: message });
+                } catch (err) { console.log("Шаринг отменен"); }
+            } else {
+                await navigator.clipboard.writeText(message);
+                showToast("Текст скопирован в буфер!", "info");
             }
-            
-            const btn = document.getElementById('btn-copy');
-            try {
-                await navigator.clipboard.writeText(msg);
-                btn.innerHTML = "✅ Скопировано!";
-                btn.style.background = "var(--success)";
-                btn.style.color = "var(--bg)";
-                clearAdhoc();
-            } catch (err) {
-                alert("Ошибка буфера обмена.");
-            }
-            
-            setTimeout(() => {
-                btn.innerHTML = "📋 Копия";
-                btn.style.background = "var(--surface-hover)";
-                btn.style.color = "var(--text)";
-            }, 2000);
         }
 
         async function generateAndSend() {
+            doVibrate(30);
             const token = localStorage.getItem('tg_token');
             const chatId = localStorage.getItem('tg_chat_id');
             const btn = document.getElementById('btn-send');
+            const label = document.getElementById('btn-label');
 
             if (!token || !chatId) {
-                alert("Ошибка: Укажите Token и Chat ID в настройках ⚙️");
+                showToast("Укажи Token и Chat ID ⚙️", "error");
                 toggleSettings();
                 return;
             }
 
-            const msg = buildMessage('html');
-            if (!msg) {
-                alert("Склад полон! Закупка не требуется.");
-                return;
-            }
+            let message = generateMessageText();
+            if (!message) return showToast("Список пуст!", "error");
 
-            btn.innerHTML = "⏳ Отправка...";
+            let htmlMessage = message.replace(/\*(.*?)\*/g, '<b>$1</b>');
+
+            label.innerText = "⏳...";
             btn.style.opacity = "0.7";
 
             try {
                 const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: chatId,
-                        text: msg,
-                        parse_mode: 'HTML'
-                    })
+                    body: JSON.stringify({ chat_id: chatId, text: htmlMessage, parse_mode: 'HTML' })
                 });
                 
                 const result = await response.json();
                 if (result.ok) {
-                    btn.innerHTML = "✅ Отправлено!";
+                    label.innerText = "✅ Отправлено";
                     btn.style.background = "#2ea043";
-                    clearAdhoc();
+                    showToast("Успешно отправлено!", "info");
+                    
+                    cartState = {};
+                    localStorage.removeItem('proDietCart');
+                    renderMatrix();
+                    updateCounter();
+
                 } else {
-                    alert("Ошибка API: " + result.description);
-                    btn.innerHTML = "❌ Ошибка";
+                    showToast("Ошибка API: " + result.description, "error");
+                    label.innerText = "❌ Ошибка";
                     btn.style.background = "var(--danger)";
                 }
             } catch (error) {
-                alert("Ошибка сети. Проверьте интернет.");
-                btn.innerHTML = "❌ Ошибка Сети";
+                showToast("Ошибка сети", "error");
+                label.innerText = "❌ Сеть";
                 btn.style.background = "var(--danger)";
             }
 
             setTimeout(() => {
-                btn.innerHTML = "🚀 В Telegram";
                 btn.style.background = "var(--success)";
                 btn.style.opacity = "1";
-            }, 3000);
-        }
-
-        function toggleSettings() {
-            document.getElementById('settings-modal').classList.toggle('active');
-        }
-        function loadSettings() {
-            document.getElementById('tg-token').value = localStorage.getItem('tg_token') || '';
-            document.getElementById('tg-chat-id').value = localStorage.getItem('tg_chat_id') || '';
-        }
-        function saveSettings() {
-            localStorage.setItem('tg_token', document.getElementById('tg-token').value.trim());
-            localStorage.setItem('tg_chat_id', document.getElementById('tg-chat-id').value.trim());
-            toggleSettings();
-            alert("Конфигурация Telegram сохранена!");
+                updateCounter();
+            }, 2500);
         }
     </script>
 </body>
 </html>
+                    
