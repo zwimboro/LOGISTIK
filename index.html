@@ -226,7 +226,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.6); gap: 8px; border: 1px solid rgba(255,255,255,0.1);
         }
         .toast.show { width: auto; height: 40px; padding: 0 20px; opacity: 1; }
-        .toast-btn { pointer-events: auto; background: var(--accent); color: #000; border: none; border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer; margin-left: 5px; touch-action: manipulation;}
+        .toast-btn { pointer-events: auto; background: var(--accent); color: #000; border: none; border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer; margin-left: 5px; touch-action: manipulation; }
     </style>
 </head>
 <body>
@@ -374,7 +374,7 @@
                 if (regs.length === 0) {
                     const cacheUrl = location.origin + location.pathname;
                     const swCode = `
-                        const CACHE_NAME = 'pro-diet-cache-v18';
+                        const CACHE_NAME = 'pro-diet-cache-v20';
                         self.addEventListener('install', event => {
                             self.skipWaiting();
                             event.waitUntil(caches.open(CACHE_NAME).then(cache => {
@@ -405,17 +405,17 @@
             });
         }
 
-        // PERSISTENT STORAGE REQUEST (ARMOR)
+        // ПЕРМАНЕНТНОЕ ХРАНИЛИЩЕ: защита кэша от автоматической очистки Chrome
         if (navigator.storage && navigator.storage.persist) {
             navigator.storage.persist().then(granted => {
-                if(granted) console.log("Storage will not be cleared except by explicit user action");
+                if(granted) console.log("Storage is persistent");
             });
         }
 
-        // DEFAULT DATABASE (Updated Prices & Weights in Cents)
+        // ОБНОВЛЁННАЯ БАЗА: Строгие цены по списку пользователя
         const DEFAULT_DB = [
             { cat: "1. Фреш-Зона", icon: "🥦", color: "rgba(57, 211, 83, 0.15)", items: [
-                { id: "bananas", name: "Бананы", unit: "шт", priceCent: 14, tags: ["углеводы"], aliases: ["банан"] }, // 1kg ~ 7pcs
+                { id: "bananas", name: "Бананы", unit: "шт", priceCent: 14, tags: ["углеводы"], aliases: ["банан"] },
                 { id: "tomatoes", name: "Помидоры", unit: "г", packSize: 1000, priceCent: 100, tags: [], aliases: ["томат", "томаты"] }
             ]},
             { cat: "2. Бакалея", icon: "🌾", color: "rgba(255, 193, 7, 0.15)", items: [
@@ -446,13 +446,13 @@
             ]},
             { cat: "5. Молочная база", icon: "🥛", color: "rgba(201, 209, 217, 0.15)", items: [
                 { id: "milk", name: "Молоко 1.5%", unit: "уп", priceCent: 105, tags: ["белок"], aliases: ["малако"] },
-                { id: "eggs", name: "Яйца", unit: "шт", priceCent: 30, tags: ["белок"], aliases: ["яйцо", "ei", "eier"] }, // 3 eur / 10
+                { id: "eggs", name: "Яйца", unit: "шт", priceCent: 30, tags: ["белок"], aliases: ["яйцо", "ei", "eier"] },
                 { id: "butter", name: "Сливочное масло", unit: "шт", priceCent: 219, tags: [], aliases: ["масло"] }
             ]},
             { cat: "6. Зоопарк & Инфра", icon: "🧻", color: "rgba(139, 148, 158, 0.15)", items: [
                 { id: "rat_food", name: "Корм для крыс", unit: "г", packSize: 2000, priceCent: 1500, tags: ["химия"], aliases: ["крысам"] },
-                { id: "tp", name: "Туалетная бумага", unit: "уп", priceCent: 600, tags: ["химия"], aliases: ["бумага", "20"] },
-                { id: "towels", name: "Бум. полотенца", unit: "уп", priceCent: 400, tags: ["химия"], aliases: ["полотенца", "8"] }
+                { id: "tp", name: "Туалетная бумага", unit: "уп", priceCent: 600, tags: ["химия"], aliases: ["бумага", "рулоны"] },
+                { id: "towels", name: "Бум. полотенца", unit: "уп", priceCent: 400, tags: ["химия"], aliases: ["полотенца", "салфетки"] }
             ]},
             { cat: "7. Напитки и Спортпит", icon: "🍺", color: "rgba(88, 166, 255, 0.15)", items: [
                 { id: "juice", name: "Сок", unit: "шт", priceCent: 179, tags: ["углеводы"], aliases: [] },
@@ -499,7 +499,6 @@
         let isFlushingQueue = false;
         let searchTimeout = null;
 
-        // Default Quick Combos
         const DEFAULT_COMBOS = [
             { name: "⚡ СпортБаза", ids: ['chicken', 'eggs', 'rice', 'protein', 'oats'] },
             { name: "🐀 Зоопарк", ids: ['rat_food', 'tp', 'towels'] },
@@ -542,11 +541,18 @@
         }
 
         function initApp() {
-            DB = safeParse('proDietDB', null);
-            if (!DB || DB.length === 0) {
+            let currentDb = safeParse('proDietDB', null);
+            let forceUpdate = safeParse('force_price_update_v2', false);
+
+            // Форсированная перезапись для применения новых цен
+            if (!currentDb || currentDb.length === 0 || !forceUpdate) {
                 DB = JSON.parse(JSON.stringify(DEFAULT_DB));
                 safeStorageWrite('proDietDB', DB);
+                safeStorageWrite('force_price_update_v2', true);
+            } else {
+                DB = currentDb;
             }
+            
             buildItemMap();
 
             cartState = safeParse('proDietCart', {});
@@ -594,9 +600,7 @@
                 sanitizeCart();
                 syncCartUI();
             }
-            if (e.key === 'proDietDB') {
-                initApp();
-            }
+            if (e.key === 'proDietDB') initApp();
             if (e.key === 'proDietCombos') {
                 customCombos = safeParse('proDietCombos', DEFAULT_COMBOS);
                 renderCombos();
@@ -746,14 +750,30 @@
         }
 
         // ====== COMBOS MANAGER ======
+        let comboHoldTimer = null;
         function renderCombos() {
             const container = document.getElementById('combos-container');
             container.innerHTML = '';
             customCombos.forEach((combo, idx) => {
                 const safeName = escapeHtml(combo.name);
-                container.innerHTML += `<div class="chip combo-btn" onclick="applyCombo(${idx})" oncontextmenu="deleteCombo(event, ${idx})">${safeName}</div>`;
+                container.innerHTML += `<div class="chip combo-btn" 
+                    oncontextmenu="deleteCombo(event, ${idx})" 
+                    ontouchstart="startComboHold(event, ${idx})" 
+                    ontouchend="clearComboHold()" 
+                    ontouchmove="clearComboHold()" 
+                    onclick="applyCombo(${idx})">${safeName}</div>`;
             });
             container.innerHTML += `<div class="chip combo-add-btn" onclick="createCombo()">+ Из корзины</div>`;
+        }
+
+        function startComboHold(e, idx) {
+            comboHoldTimer = setTimeout(() => {
+                doVibrate(50);
+                deleteCombo(e, idx);
+            }, 800);
+        }
+        function clearComboHold() {
+            clearTimeout(comboHoldTimer);
         }
 
         function createCombo() {
@@ -770,7 +790,7 @@
         }
 
         function deleteCombo(e, idx) {
-            e.preventDefault(); 
+            if(e) e.preventDefault(); 
             if(confirm(`Удалить сборку "${customCombos[idx].name}"?`)) {
                 customCombos.splice(idx, 1);
                 safeStorageWrite('proDietCombos', customCombos);
