@@ -226,7 +226,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.6); gap: 8px; border: 1px solid rgba(255,255,255,0.1);
         }
         .toast.show { width: auto; height: 40px; padding: 0 20px; opacity: 1; }
-        .toast-btn { pointer-events: auto; background: var(--accent); color: #000; border: none; border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer; margin-left: 5px; touch-action: manipulation; }
+        .toast-btn { pointer-events: auto; background: var(--accent); color: #000; border: none; border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer; margin-left: 5px; touch-action: manipulation;}
     </style>
 </head>
 <body>
@@ -288,11 +288,11 @@
             <h2><span>Настройки API</span> <span class="close-modal" onclick="toggleSettings()">✕</span></h2>
             <div class="form-group">
                 <label>Bot Token (@BotFather)</label>
-                <input type="text" id="tg-token" placeholder="Токен бота" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <input type="text" id="tg-token" placeholder="Например: 123456:ABC-DEF" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             </div>
             <div class="form-group">
                 <label>Ваш Chat ID (@userinfobot)</label>
-                <input type="text" id="tg-chat-id" placeholder="ID чата" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <input type="text" id="tg-chat-id" placeholder="Например: 123456789" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             </div>
             <button class="btn-save" onclick="saveSettings()">Сохранить</button>
         </div>
@@ -374,7 +374,7 @@
                 if (regs.length === 0) {
                     const cacheUrl = location.origin + location.pathname;
                     const swCode = `
-                        const CACHE_NAME = 'pro-diet-cache-v20';
+                        const CACHE_NAME = 'pro-diet-cache-v21';
                         self.addEventListener('install', event => {
                             self.skipWaiting();
                             event.waitUntil(caches.open(CACHE_NAME).then(cache => {
@@ -412,73 +412,73 @@
             });
         }
 
-        // ОБНОВЛЁННАЯ БАЗА: Строгие цены по списку пользователя
+        // ОБНОВЛЁННАЯ БАЗА: Строгие цены по списку пользователя (В ЦЕНТАХ)
         const DEFAULT_DB = [
             { cat: "1. Фреш-Зона", icon: "🥦", color: "rgba(57, 211, 83, 0.15)", items: [
-                { id: "bananas", name: "Бананы", unit: "шт", priceCent: 14, tags: ["углеводы"], aliases: ["банан"] },
+                { id: "bananas", name: "Бананы", unit: "шт", priceCent: 14, tags: ["углеводы"], aliases: ["банан"] }, // 1kg = 1 евро = ~7шт = 14 центов шт
                 { id: "tomatoes", name: "Помидоры", unit: "г", packSize: 1000, priceCent: 100, tags: [], aliases: ["томат", "томаты"] }
             ]},
             { cat: "2. Бакалея", icon: "🌾", color: "rgba(255, 193, 7, 0.15)", items: [
                 { id: "oats", name: "Овсянка", unit: "г", packSize: 500, priceCent: 79, tags: ["углеводы"], aliases: ["хлопья", "каша"] },
                 { id: "chia", name: "Семена Чиа", unit: "уп", priceCent: 199, tags: [], aliases: [] },
                 { id: "rice", name: "Рис Басмати", unit: "г", packSize: 1000, priceCent: 279, tags: ["углеводы"], aliases: [] },
-                { id: "pasta", name: "Спагетти", unit: "г", packSize: 500, priceCent: 200, tags: ["углеводы"], aliases: ["макароны", "паста"] },
-                { id: "buckwheat", name: "Гречка", unit: "г", packSize: 1000, priceCent: 200, tags: ["углеводы"], aliases: ["греча"] },
-                { id: "bread", name: "Протеиновый хлеб", unit: "г", packSize: 1000, priceCent: 200, tags: ["углеводы", "белок"], aliases: ["хлеб"] },
+                { id: "pasta", name: "Спагетти", unit: "г", packSize: 500, priceCent: 200, tags: ["углеводы"], aliases: ["макароны", "паста"] }, // 2 евро
+                { id: "buckwheat", name: "Гречка", unit: "г", packSize: 1000, priceCent: 200, tags: ["углеводы"], aliases: ["греча"] }, // 2 евро
+                { id: "bread", name: "Протеиновый хлеб", unit: "г", packSize: 1000, priceCent: 200, tags: ["углеводы", "белок"], aliases: ["хлеб"] }, // 2 евро
                 { id: "nuts", name: "Орехи (Грецкие)", unit: "г", packSize: 200, priceCent: 299, tags: [], aliases: ["орех"] },
-                { id: "oil", name: "Масло растит.", unit: "шт", priceCent: 250, tags: [], aliases: ["подсолнечное", "литр"] },
-                { id: "cacao", name: "Какао", unit: "г", packSize: 500, priceCent: 400, tags: [], aliases: [] }
+                { id: "oil", name: "Масло растит.", unit: "шт", priceCent: 250, tags: [], aliases: ["подсолнечное", "литр"] }, // 2.50
+                { id: "cacao", name: "Какао", unit: "г", packSize: 500, priceCent: 400, tags: [], aliases: [] } // 4 евро
             ]},
             { cat: "3. Сыры, Ягоды, Снеки", icon: "🧀", color: "rgba(255, 152, 0, 0.15)", items: [
-                { id: "honey", name: "Мёд", unit: "г", packSize: 500, priceCent: 300, tags: ["углеводы"], aliases: [] },
-                { id: "white_cheese", name: "Белый сыр (Брынза)", unit: "г", packSize: 1000, priceCent: 700, tags: ["белок"], aliases: ["фета", "feta"] },
+                { id: "honey", name: "Мёд", unit: "г", packSize: 500, priceCent: 300, tags: ["углеводы"], aliases: [] }, // 3 евро
+                { id: "white_cheese", name: "Белый сыр (Брынза)", unit: "г", packSize: 1000, priceCent: 700, tags: ["белок"], aliases: ["фета", "feta"] }, // 7 евро
                 { id: "kashar", name: "Сыр Кашар", unit: "шт", priceCent: 349, tags: ["белок"], aliases: ["кашкавал"] },
                 { id: "gouda", name: "Сыр Гауда", unit: "шт", priceCent: 249, tags: ["белок"], aliases: [] },
                 { id: "cottage", name: "Творожный сыр (Филадельфия)", unit: "шт", priceCent: 199, tags: ["белок"], aliases: ["филадельфия", "творог"] },
                 { id: "olives", name: "Оливки", unit: "уп", priceCent: 179, tags: [], aliases: [] },
-                { id: "blueberry", name: "Черника", unit: "г", packSize: 700, priceCent: 500, tags: [], aliases: ["ягоды"] },
-                { id: "raspberry", name: "Малина", unit: "г", packSize: 700, priceCent: 700, tags: [], aliases: ["ягоды"] },
+                { id: "blueberry", name: "Черника", unit: "г", packSize: 700, priceCent: 500, tags: [], aliases: ["ягоды"] }, // 5 евро
+                { id: "raspberry", name: "Малина", unit: "г", packSize: 700, priceCent: 700, tags: [], aliases: ["ягоды"] }, // 7 евро
                 { id: "chips", name: "Чипсы", unit: "уп", priceCent: 199, tags: ["углеводы"], aliases: ["снеки"] }
             ]},
             { cat: "4. Мясной отдел", icon: "🥩", color: "rgba(248, 81, 73, 0.15)", items: [
                 { id: "chicken", name: "Филе курицы", unit: "г", packSize: 1000, priceCent: 949, tags: ["белок"], aliases: ["мясо", "грудка", "курица"] },
-                { id: "fuet", name: "Салями Fuet", unit: "шт", priceCent: 300, tags: [], aliases: ["колбаса", "палка"] }
+                { id: "fuet", name: "Салями Fuet", unit: "шт", priceCent: 300, tags: [], aliases: ["колбаса", "палка"] } // 3 евро
             ]},
             { cat: "5. Молочная база", icon: "🥛", color: "rgba(201, 209, 217, 0.15)", items: [
                 { id: "milk", name: "Молоко 1.5%", unit: "уп", priceCent: 105, tags: ["белок"], aliases: ["малако"] },
-                { id: "eggs", name: "Яйца", unit: "шт", priceCent: 30, tags: ["белок"], aliases: ["яйцо", "ei", "eier"] },
+                { id: "eggs", name: "Яйца", unit: "шт", priceCent: 30, tags: ["белок"], aliases: ["яйцо", "ei", "eier"] }, // 3 евро за десяток = 30 центов шт
                 { id: "butter", name: "Сливочное масло", unit: "шт", priceCent: 219, tags: [], aliases: ["масло"] }
             ]},
             { cat: "6. Зоопарк & Инфра", icon: "🧻", color: "rgba(139, 148, 158, 0.15)", items: [
-                { id: "rat_food", name: "Корм для крыс", unit: "г", packSize: 2000, priceCent: 1500, tags: ["химия"], aliases: ["крысам"] },
-                { id: "tp", name: "Туалетная бумага", unit: "уп", priceCent: 600, tags: ["химия"], aliases: ["бумага", "рулоны"] },
-                { id: "towels", name: "Бум. полотенца", unit: "уп", priceCent: 400, tags: ["химия"], aliases: ["полотенца", "салфетки"] }
+                { id: "rat_food", name: "Корм для крыс", unit: "г", packSize: 2000, priceCent: 1500, tags: ["химия"], aliases: ["крысам"] }, // 15 евро
+                { id: "tp", name: "Туалетная бумага", unit: "уп", priceCent: 600, tags: ["химия"], aliases: ["бумага", "рулоны", "20"] }, // 6 евро 20 рул
+                { id: "towels", name: "Бум. полотенца", unit: "уп", priceCent: 400, tags: ["химия"], aliases: ["полотенца", "салфетки", "8"] } // 4 евро 8 рул
             ]},
             { cat: "7. Напитки и Спортпит", icon: "🍺", color: "rgba(88, 166, 255, 0.15)", items: [
                 { id: "juice", name: "Сок", unit: "шт", priceCent: 179, tags: ["углеводы"], aliases: [] },
-                { id: "beer", name: "Пиво", unit: "уп", priceCent: 1500, tags: [], aliases: ["ящик"] },
-                { id: "protein", name: "Протеин", unit: "г", packSize: 500, priceCent: 1500, tags: ["белок"], aliases: ["прот", "спортпит"] },
-                { id: "creatine", name: "Креатин", unit: "г", packSize: 250, priceCent: 1500, tags: ["белок"], aliases: [] }
+                { id: "beer", name: "Пиво", unit: "уп", priceCent: 1500, tags: [], aliases: ["ящик"] }, // 15 евро
+                { id: "protein", name: "Протеин", unit: "г", packSize: 500, priceCent: 1500, tags: ["белок"], aliases: ["прот", "спортпит"] }, // 15 евро
+                { id: "creatine", name: "Креатин", unit: "г", packSize: 250, priceCent: 1500, tags: ["белок"], aliases: [] } // 15 евро
             ]},
             { cat: "8. Чайная зона", icon: "☕", color: "rgba(210, 168, 255, 0.15)", items: [
-                { id: "sencha", name: "Чай Сенча", unit: "уп", priceCent: 300, tags: [], aliases: ["зеленый", "чай"] },
-                { id: "jasmine", name: "Чай Жасминовый", unit: "уп", priceCent: 300, tags: [], aliases: ["чай"] },
-                { id: "chamomile", name: "Ромашка", unit: "уп", priceCent: 300, tags: [], aliases: ["чай"] },
-                { id: "fennel", name: "Фенхель Анис", unit: "уп", priceCent: 300, tags: [], aliases: ["чай"] },
-                { id: "tea_bags_m", name: "Чайные пакетики M", unit: "уп", priceCent: 250, tags: [], aliases: ["фильтры"] },
-                { id: "tea_bags_xl", name: "Чайные пакетики XL", unit: "уп", priceCent: 250, tags: [], aliases: ["фильтры"] }
+                { id: "sencha", name: "Чай Сенча", unit: "уп", priceCent: 300, tags: [], aliases: ["зеленый", "чай"] }, // 3 евро
+                { id: "jasmine", name: "Чай Жасминовый", unit: "уп", priceCent: 300, tags: [], aliases: ["чай"] }, // 3 евро
+                { id: "chamomile", name: "Ромашка", unit: "уп", priceCent: 300, tags: [], aliases: ["чай"] }, // 3 евро
+                { id: "fennel", name: "Фенхель Анис", unit: "уп", priceCent: 300, tags: [], aliases: ["чай"] }, // 3 евро
+                { id: "tea_bags_m", name: "Чайные пакетики M", unit: "уп", priceCent: 250, tags: [], aliases: ["фильтры"] }, // 2.5
+                { id: "tea_bags_xl", name: "Чайные пакетики XL", unit: "уп", priceCent: 250, tags: [], aliases: ["фильтры"] } // 2.5
             ]},
             { cat: "9. Бытовая химия", icon: "🧹", color: "rgba(63, 185, 80, 0.15)", items: [
-                { id: "apple_soap", name: "Яблочное моющее", unit: "шт", priceCent: 400, tags: ["химия"], aliases: ["посуда", "spülmittel"] },
-                { id: "dw_pods", name: "Капсулы в посудомойку", unit: "уп", priceCent: 1500, tags: ["химия"], aliases: ["таблетки", "посудомойка"] },
-                { id: "laundry_pods", name: "Капсулы в стиралку", unit: "уп", priceCent: 1500, tags: ["химия"], aliases: ["стирка"] },
+                { id: "apple_soap", name: "Яблочное моющее", unit: "шт", priceCent: 400, tags: ["химия"], aliases: ["посуда", "spülmittel"] }, // 4 евро
+                { id: "dw_pods", name: "Капсулы в посудомойку", unit: "уп", priceCent: 1500, tags: ["химия"], aliases: ["таблетки", "посудомойка"] }, // 15 евро
+                { id: "laundry_pods", name: "Капсулы в стиралку", unit: "уп", priceCent: 1500, tags: ["химия"], aliases: ["стирка"] }, // 15 евро
                 { id: "wet_wipes", name: "Влажные салфетки", unit: "уп", priceCent: 135, tags: ["химия"], aliases: [] },
-                { id: "alcohol_wipes", name: "Спиртовые салфетки", unit: "уп", priceCent: 600, tags: ["химия"], aliases: [] },
+                { id: "alcohol_wipes", name: "Спиртовые салфетки", unit: "уп", priceCent: 600, tags: ["химия"], aliases: [] }, // 6 евро
                 { id: "hand_soap", name: "Мыло для рук", unit: "шт", priceCent: 115, tags: ["химия"], aliases: ["мыло"] },
-                { id: "sponge", name: "Мочалки", unit: "уп", priceCent: 100, tags: ["химия"], aliases: ["губки"] },
+                { id: "sponge", name: "Мочалки", unit: "уп", priceCent: 100, tags: ["химия"], aliases: ["губки"] }, // 1 евро
                 { id: "shower_gel", name: "Гель для душа", unit: "шт", priceCent: 145, tags: ["химия"], aliases: ["гель"] },
-                { id: "shave_gel", name: "Гель для бритья", unit: "шт", priceCent: 300, tags: ["химия"], aliases: ["пена"] },
-                { id: "razors", name: "Бритвы", unit: "уп", priceCent: 500, tags: ["химия"], aliases: ["станки"] }
+                { id: "shave_gel", name: "Гель для бритья", unit: "шт", priceCent: 300, tags: ["химия"], aliases: ["пена"] }, // 3 евро
+                { id: "razors", name: "Бритвы", unit: "уп", priceCent: 500, tags: ["химия"], aliases: ["станки"] } // 5 евро
             ]}
         ];
 
@@ -542,13 +542,13 @@
 
         function initApp() {
             let currentDb = safeParse('proDietDB', null);
-            let forceUpdate = safeParse('force_price_update_v2', false);
+            let isV21UpdateDone = safeParse('force_price_update_v21', false);
 
-            // Форсированная перезапись для применения новых цен
-            if (!currentDb || currentDb.length === 0 || !forceUpdate) {
+            // ФОРСИРОВАННАЯ ЗАГРУЗКА ПРАВИЛЬНЫХ ЦЕН: сносит старый кэш БД при первом запуске
+            if (!currentDb || currentDb.length === 0 || !isV21UpdateDone) {
                 DB = JSON.parse(JSON.stringify(DEFAULT_DB));
                 safeStorageWrite('proDietDB', DB);
-                safeStorageWrite('force_price_update_v2', true);
+                safeStorageWrite('force_price_update_v21', true);
             } else {
                 DB = currentDb;
             }
@@ -558,6 +558,8 @@
             cartState = safeParse('proDietCart', {});
             presetsState = safeParse('proDietPresets', {});
             customCombos = safeParse('proDietCombos', null) || JSON.parse(JSON.stringify(DEFAULT_COMBOS));
+            
+            // Очищаем старую сломанную очередь, если она есть
             offlineQueue = safeParse('proDietQueue', []);
             
             sanitizeCart();
@@ -749,7 +751,7 @@
             return String(text).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
         }
 
-        // ====== COMBOS MANAGER ======
+        // ====== СИСТЕМА УПРАВЛЕНИЯ БЫСТРЫМИ СБОРКАМИ ======
         let comboHoldTimer = null;
         function renderCombos() {
             const container = document.getElementById('combos-container');
@@ -772,6 +774,7 @@
                 deleteCombo(e, idx);
             }, 800);
         }
+        
         function clearComboHold() {
             clearTimeout(comboHoldTimer);
         }
@@ -1021,7 +1024,7 @@
             }
         }
 
-        // ====== DB MANAGER LOGIC WITH EXPORT/IMPORT ======
+        // ====== DB MANAGER LOGIC ======
         function openDbManager() {
             document.getElementById('db-modal').classList.add('active');
             toggleModalScrollLock(true);
@@ -1298,8 +1301,15 @@
         }
 
         function saveSettings() {
-            safeStorageWrite('tg_token', document.getElementById('tg-token').value.trim());
-            safeStorageWrite('tg_chat_id', document.getElementById('tg-chat-id').value.trim());
+            let rawToken = document.getElementById('tg-token').value;
+            let rawChatId = document.getElementById('tg-chat-id').value;
+            
+            // Жесткая очистка от пробелов, переносов строк и мусора
+            let cleanToken = rawToken.replace(/[\s\r\n]+/g, '');
+            let cleanChatId = rawChatId.replace(/[\s\r\n]+/g, '');
+
+            safeStorageWrite('tg_token', cleanToken);
+            safeStorageWrite('tg_chat_id', cleanChatId);
             
             toggleSettings();
             showToast("Настройки API сохранены", "info");
@@ -1371,12 +1381,22 @@
             }
         }
 
+        function wipeCartAfterSend() {
+            cartState = {};
+            safeStorageWrite('proDietCart', cartState);
+            syncCartUI();
+        }
+
         async function generateAndSend() {
             if(isSending) return;
-            
             doVibrate(30);
-            const token = localStorage.getItem('tg_token');
-            const chatId = localStorage.getItem('tg_chat_id');
+
+            let rawToken = localStorage.getItem('tg_token') || '';
+            let rawChatId = localStorage.getItem('tg_chat_id') || '';
+            
+            let token = rawToken.replace(/[\s\r\n]+/g, '');
+            let chatId = rawChatId.replace(/[\s\r\n]+/g, '');
+
             const btn = document.getElementById('btn-send');
             const label = document.getElementById('btn-label');
 
@@ -1398,28 +1418,40 @@
             label.innerText = "⏳...";
 
             const payload = { chat_id: chatId, text: htmlMessage, parse_mode: 'HTML' };
+            const apiUrl = `https://api.telegram.org/bot${token}/sendMessage`;
 
-            cartState = {};
-            safeStorageWrite('proDietCart', cartState);
-            syncCartUI();
+            if (!apiUrl.startsWith('https://api.telegram.org/bot')) {
+                showToast("Токен поврежден!", "error");
+                return cleanupAfterSend(btn);
+            }
 
             if (!navigator.onLine) {
                 queueRequest(token, payload);
+                wipeCartAfterSend();
                 label.innerText = "💾 В очереди";
                 showToast("Нет сети. Отправлю позже.", "info");
-                cleanupAfterSend(btn); 
-                return;
+                return cleanupAfterSend(btn);
             }
 
+            let response;
             try {
-                const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                
+            } catch (netError) {
+                queueRequest(token, payload);
+                wipeCartAfterSend();
+                label.innerText = "💾 В очереди";
+                showToast("Сбой сети. Сохранено в очередь.", "info");
+                return cleanupAfterSend(btn);
+            }
+
+            try {
                 const result = await response.json();
                 if (result.ok) {
+                    wipeCartAfterSend();
                     label.innerText = "✅ Отправлено";
                     btn.style.background = "#2ea043";
                     showToast("Успешно отправлено!", "success");
@@ -1427,20 +1459,18 @@
                     if(typeof confetti === 'function') {
                         confetti({ particleCount: 100, spread: 70, origin: { y: 0.8 }, colors: ['#39d353', '#58a6ff', '#ffffff']});
                     }
-
-                    cleanupAfterSend(btn);
                 } else {
-                    showToast("Ошибка API: " + result.description, "error");
+                    showToast("Ошибка API: " + (result.description || "Неизвестно"), "error");
                     label.innerText = "❌ Ошибка";
                     btn.style.background = "var(--danger)";
-                    cleanupAfterSend(btn);
                 }
-            } catch (error) {
-                queueRequest(token, payload);
-                label.innerText = "💾 В очереди";
-                showToast("Сбой сети. Сохранено в очередь.", "info");
-                cleanupAfterSend(btn);
+            } catch (jsonError) {
+                showToast("Кривой Токен (API недоступен)", "error");
+                label.innerText = "❌ Токен?";
+                btn.style.background = "var(--danger)";
             }
+
+            cleanupAfterSend(btn);
         }
 
         function queueRequest(token, payload) {
@@ -1470,35 +1500,46 @@
             
             isFlushingQueue = true;
             showToast("Отправка очереди...", "info");
+            
             let successfulIds = [];
+            let unrecoverableIds = []; 
             
             for (let req of offlineQueue) {
                 if (!req || !req.token || !req.payload) {
-                    if (req && req.id) successfulIds.push(req.id);
+                    if (req && req.id) unrecoverableIds.push(req.id);
                     continue;
                 }
 
                 try {
-                    const res = await fetch(`https://api.telegram.org/bot${req.token}/sendMessage`, {
+                    const cleanToken = req.token.replace(/[\s\r\n]+/g, '');
+                    const apiUrl = `https://api.telegram.org/bot${cleanToken}/sendMessage`;
+                    
+                    const res = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(req.payload)
                     });
                     
-                    if (res.ok || (res.status >= 400 && res.status < 500 && res.status !== 429)) {
-                        successfulIds.push(req.id); 
+                    if (res.ok) {
+                        successfulIds.push(req.id);
+                    } else if (res.status >= 400 && res.status < 500 && res.status !== 429) {
+                        unrecoverableIds.push(req.id);
                     }
                 } catch (e) {
                 }
             }
             
             let latestQueue = safeParse('proDietQueue', []);
-            offlineQueue = latestQueue.filter(req => !successfulIds.includes(req.id));
+            offlineQueue = latestQueue.filter(req => !successfulIds.includes(req.id) && !unrecoverableIds.includes(req.id));
             safeStorageWrite('proDietQueue', offlineQueue);
             
             if(offlineQueue.length === 0) {
-                showToast("Очередь успешно отправлена!", "success");
-                if(typeof confetti === 'function') confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }});
+                if (unrecoverableIds.length > 0 && successfulIds.length === 0) {
+                    showToast("Очередь сброшена (Неверный Токен/ID)", "error");
+                } else {
+                    showToast("Очередь успешно отправлена!", "success");
+                    if(typeof confetti === 'function') confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }});
+                }
             } else if (successfulIds.length > 0) {
                 showToast("Часть очереди отправлена", "info");
             } else {
